@@ -27,6 +27,7 @@ ExportedObj/
 
 # Log files
 *.log
+Logs/*
 
 # Unity3D generated meta files
 *.pidb.meta
