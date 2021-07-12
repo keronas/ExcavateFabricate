@@ -70,7 +70,7 @@ public class ChunkScript : MonoBehaviour
                 {
                     if (data[x][y][z] != 0)
                     {
-                        // If any neighbouring space is still inside chunk but doesn't contain any block, then current block may be visible
+                        // If any neighbouring space outside chunk or doesn't contain any block, then current block may be visible
                         if (!OptimizeBlocks ||
                             (x - 1 < 0 || data[x - 1][y][z] == 0) ||
                             (y - 1 < 0 || data[x][y - 1][z] == 0) ||
