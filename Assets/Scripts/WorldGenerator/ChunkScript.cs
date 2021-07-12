@@ -67,12 +67,12 @@ public class ChunkScript : MonoBehaviour
                     {
                         // If any neighbouring space is still inside chunk but doesn't contain any block, then current block may be visible
                         if (!OptimizeBlocks ||
-                            (x - 1 >= 0 && data[x - 1][y][z] == 0) ||
-                            (y - 1 >= 0 && data[x][y - 1][z] == 0) ||
-                            (z - 1 >= 0 && data[x][y][z - 1] == 0) ||
-                            (x + 1 < ChunkSize && data[x + 1][y][z] == 0) ||
-                            (y + 1 < ChunkSize && data[x][y + 1][z] == 0) ||
-                            (z + 1 < ChunkSize && data[x][y][z + 1] == 0))
+                            (x - 1 < 0 || data[x - 1][y][z] == 0) ||
+                            (y - 1 < 0 || data[x][y - 1][z] == 0) ||
+                            (z - 1 < 0 || data[x][y][z - 1] == 0) ||
+                            (x + 1 >= ChunkSize || data[x + 1][y][z] == 0) ||
+                            (y + 1 >= ChunkSize || data[x][y + 1][z] == 0) ||
+                            (z + 1 >= ChunkSize || data[x][y][z + 1] == 0))
                         {
                             CreateBlock(new Vector3(x, y, z));
                         }
