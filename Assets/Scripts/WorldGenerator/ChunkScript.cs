@@ -4,9 +4,12 @@ using LibNoise.Unity;
 using LibNoise.Unity.Generator;
 using UnityEngine;
 
+[RequireComponent(typeof (MeshFilter))]
+[RequireComponent(typeof (MeshRenderer))]
+[RequireComponent(typeof (MeshCollider))]
 public class ChunkScript : MonoBehaviour
 {
-    public GameObject BlockPrefab;
+    public Mesh BlockMesh;
     public uint ChunkSize;
     public double PerlinWeight;
     public double HeightWeight;
@@ -22,7 +25,7 @@ public class ChunkScript : MonoBehaviour
     void Start()  
     {
         InitializeData();
-        InstantiateBlocks();
+        CreateBlocks();
     }
 
     private void InitializeData()
@@ -55,8 +58,10 @@ public class ChunkScript : MonoBehaviour
         }
     }
 
-    private void InstantiateBlocks()
+    private void CreateBlocks()
     {
+        var combineInstances = new List<CombineInstance>();
+
         for (var x = 0; x < ChunkSize; x++)
         {
             for (var y = 0; y < ChunkSize; y++)
@@ -74,27 +79,26 @@ public class ChunkScript : MonoBehaviour
                             (y + 1 >= ChunkSize || data[x][y + 1][z] == 0) ||
                             (z + 1 >= ChunkSize || data[x][y][z + 1] == 0))
                         {
-                            CreateBlock(new Vector3(x, y, z));
+                            var combineInstance = new CombineInstance();
+                            combineInstance.mesh = BlockMesh;
+                            combineInstance.transform = Matrix4x4.Translate(new Vector3(x, y, z));
+                            combineInstances.Add(combineInstance);
                         }
                     }
-                    
                 }
             }
         }
+
+        var meshFilter = GetComponent<MeshFilter>();
+        meshFilter.mesh = new Mesh();
+        meshFilter.mesh.CombineMeshes(combineInstances.ToArray());
+        var meshCollider = GetComponent<MeshCollider>();
+        meshCollider.sharedMesh = meshFilter.mesh;
     }
 
     // Update is called once per frame
     void Update()
     {
         
-    }
-
-    private void CreateBlock(Vector3 position)
-    {
-        var positionOffset = new Vector3(0.5f, 0.5f, 0.5f); // to fit nicely into the editor grid
-        var block = GameObject.Instantiate(BlockPrefab, transform);
-        block.transform.localPosition = position + positionOffset;
-        block.name = $"Block {position.x};{position.y};{position.z}";
-        objects.Add(block);
     }
 }

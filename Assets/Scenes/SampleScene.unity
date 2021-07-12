@@ -346,8 +346,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 733a6631935ccb543b8634f9b626a012, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BlockPrefab: {fileID: 1239008815784780439, guid: b8093b570ae986246bba2926d82b723e, type: 3}
-  ChunkSize: 16
+  BlockMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  BlockMaterial: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  ChunkSize: 25
   PerlinWeight: 4
   HeightWeight: 0.6
   GroundLevel: 12

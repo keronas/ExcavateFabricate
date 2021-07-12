@@ -6,7 +6,8 @@ using UnityEngine;
 
 public class WorldGeneratorScript : MonoBehaviour
 {
-    public GameObject BlockPrefab;
+    public Mesh BlockMesh;
+    public Material BlockMaterial;
     public uint ChunkSize;
     public double PerlinWeight;
     public double HeightWeight;
@@ -20,11 +21,11 @@ public class WorldGeneratorScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        for (var x = 0; x < 5; x++)
+        for (var x = 0; x < 10; x++)
         {
             for (var y = 0; y < 2; y++)
             {
-                for (var z = 0; z < 5; z++)
+                for (var z = 0; z < 10; z++)
                 {
                     CreateChunk(new Vector3Int(x, y, z));
                 }
@@ -42,8 +43,10 @@ public class WorldGeneratorScript : MonoBehaviour
     {
         var chunk = new GameObject($"Chunk {position.x};{position.y};{position.z}");
         chunk.transform.position = (Vector3)position * ChunkSize;
+        var meshRenderer = chunk.AddComponent<MeshRenderer>();
+        meshRenderer.material = BlockMaterial;
         var chunkScript = chunk.AddComponent<ChunkScript>();
-        chunkScript.BlockPrefab = BlockPrefab;
+        chunkScript.BlockMesh = BlockMesh;
         chunkScript.ChunkSize = ChunkSize;
         chunkScript.PerlinWeight = PerlinWeight;
         chunkScript.HeightWeight = HeightWeight;
