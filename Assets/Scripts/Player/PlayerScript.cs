@@ -1,12 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Scripting;
 
+[RequireComponent(typeof (CharacterController))]
 public class PlayerScript : MonoBehaviour
 {
-    public float PlayerSpeed;
+    public float PlayerSpeed = 10;
+    public float JumpSpeed = 8;
 
     private Vector3 playerVelocity;
+
     private CharacterController controller;
     private Camera playerCamera;
 
@@ -24,6 +28,10 @@ public class PlayerScript : MonoBehaviour
         if (groundedPlayer && playerVelocity.y < 0)
         {
             playerVelocity.y = 0f;
+        }
+        if (Input.GetButton("Jump") && groundedPlayer)
+        {
+            playerVelocity.y = JumpSpeed;
         }
 
         Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
