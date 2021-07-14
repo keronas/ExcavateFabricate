@@ -97,6 +97,7 @@ public class ChunkScript : MonoBehaviour
         }
 
         var meshFilter = GetComponent<MeshFilter>();
+        Destroy(meshFilter.mesh);
         meshFilter.mesh = new Mesh();
         meshFilter.mesh.CombineMeshes(combineInstances.ToArray());
         var meshCollider = GetComponent<MeshCollider>();
