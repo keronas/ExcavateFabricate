@@ -43,6 +43,7 @@ public class WorldGeneratorScript : MonoBehaviour
     {
         var chunk = new GameObject($"Chunk {position.x};{position.y};{position.z}");
         chunk.transform.position = (Vector3)position * ChunkSize;
+        chunk.layer = 6;
         var meshRenderer = chunk.AddComponent<MeshRenderer>();
         meshRenderer.material = BlockMaterial;
         var chunkScript = chunk.AddComponent<ChunkScript>();

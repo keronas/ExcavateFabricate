@@ -54,7 +54,8 @@ public class PlayerScript : MonoBehaviour
 
     private void RemoveBlock()
     {
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.rotation * Vector3.forward, out var hitInfo))
+        var layerMask = 1 << 6; // ignore everything except layer 6
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.rotation * Vector3.forward, out var hitInfo, Mathf.Infinity, layerMask))
         {
             var normal = hitInfo.normal;
             var point = hitInfo.point;
