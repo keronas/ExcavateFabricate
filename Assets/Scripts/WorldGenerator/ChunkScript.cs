@@ -21,11 +21,18 @@ public class ChunkScript : MonoBehaviour
     private byte[][][] data { get; set; }
     private List<GameObject> objects { get; set; } = new List<GameObject>();
 
+    public void RemoveBlock(Vector3Int worldPosition)
+    {
+        var localPosition = worldPosition - transform.position;
+        data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z] = 0;
+        RecreateMesh();
+    }
+
     // Start is called before the first frame update
     void Start()  
     {
         InitializeData();
-        CreateBlocks();
+        RecreateMesh();
     }
 
     private void InitializeData()
@@ -58,7 +65,7 @@ public class ChunkScript : MonoBehaviour
         }
     }
 
-    private void CreateBlocks()
+    private void RecreateMesh()
     {
         var combineInstances = new List<CombineInstance>();
 
