@@ -393,7 +393,7 @@ Light:
   m_Type: 1
   m_Shape: 0
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.6
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -726,6 +726,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerSpeed: 10
   JumpSpeed: 8
+  PreviewBlockPrefab: {fileID: 161215981095310015, guid: 3aa82127b18d6d540a1e8fad186a7664, type: 3}
 --- !u!81 &1761726305
 AudioListener:
   m_ObjectHideFlags: 0

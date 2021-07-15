@@ -9,11 +9,13 @@ public class PlayerScript : MonoBehaviour
 {
     public float PlayerSpeed = 10;
     public float JumpSpeed = 8;
+    public GameObject PreviewBlockPrefab;
 
     private Vector3 playerVelocity;
 
     private CharacterController controller;
     private Camera playerCamera;
+    private GameObject previewBlock;
 
     // Start is called before the first frame update
     void Start()
@@ -25,9 +27,23 @@ public class PlayerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetButton("Fire1"))
+        if (Input.GetButton("Fire2"))
         {
-            RemoveBlock();
+            ShowPreviewBlock();
+
+            if (Input.GetButton("Fire1"))
+            {
+                CreateBlock();
+            }
+        }
+        else
+        {
+            RemovePreviewBlock();
+
+            if (Input.GetButton("Fire1"))
+            {
+                RemoveBlock();
+            }
         }
 
         var groundedPlayer = controller.isGrounded;
@@ -52,19 +68,75 @@ public class PlayerScript : MonoBehaviour
         playerCamera.transform.Rotate(-Input.GetAxis("Mouse Y"), 0, 0);
     }
 
+    private void ShowPreviewBlock()
+    {
+        var position = FindBlockPositionAtCursor(true, out _);
+        if (position != null)
+        {
+            if (previewBlock == null)
+            {
+                previewBlock = GameObject.Instantiate(PreviewBlockPrefab);
+            }
+            previewBlock.transform.position = (Vector3Int)position;
+        }
+        else
+        {
+            RemovePreviewBlock();
+        }
+    }
+
+    private void RemovePreviewBlock()
+    {
+        if (previewBlock != null)
+        {
+            Destroy(previewBlock);
+            previewBlock = null;
+        }
+    }
+
+    private void CreateBlock()
+    {
+        if (previewBlock != null)
+        {
+            var worldGenerator = FindObjectOfType<WorldGeneratorScript>();
+            worldGenerator.CreateBlock(Vector3Int.RoundToInt(previewBlock.transform.position));
+        }
+    }
+
     private void RemoveBlock()
+    {
+        var position = FindBlockPositionAtCursor(false, out var colliderHit);
+        if (position != null)
+        {
+            var chunk = colliderHit.gameObject.GetComponent<ChunkScript>();
+            chunk.SetBlock((Vector3Int)position, 0);
+        }
+    }
+
+    private Vector3Int? FindBlockPositionAtCursor(bool outsideBlock, out Collider colliderHit)
     {
         var layerMask = 1 << 6; // ignore everything except layer 6
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.rotation * Vector3.forward, out var hitInfo, Mathf.Infinity, layerMask))
         {
             var normal = hitInfo.normal;
             var point = hitInfo.point;
+            Vector3 correctedPoint;
 
-            var correctedPoint = point - normal / 2; // moves point from face of the block to the middle of it, to decide which side of face is the correct block 
-            var blockPosition = Vector3Int.RoundToInt(correctedPoint);
+            // decides which side of the face should be returned
+            if (outsideBlock)
+            {
+                correctedPoint = point + normal / 2;
+            }
+            else
+            {
+                correctedPoint = point - normal / 2;
+            }
 
-            var chunk = hitInfo.collider.gameObject.GetComponent<ChunkScript>();
-            chunk.RemoveBlock(blockPosition);
+            colliderHit = hitInfo.collider;
+            return Vector3Int.RoundToInt(correctedPoint);
         }
+
+        colliderHit = null;
+        return null;
     }
 }

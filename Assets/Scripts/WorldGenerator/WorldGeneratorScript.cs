@@ -18,6 +18,12 @@ public class WorldGeneratorScript : MonoBehaviour
 
     private Perlin perlinGenerator = new Perlin();
 
+    public void CreateBlock(Vector3Int worldPosition)
+    {
+        var chunk = chunks[worldPosition / (int)ChunkSize].GetComponent<ChunkScript>();
+        chunk.SetBlock(worldPosition, 1);
+    }
+
     // Start is called before the first frame update
     void Start()
     {

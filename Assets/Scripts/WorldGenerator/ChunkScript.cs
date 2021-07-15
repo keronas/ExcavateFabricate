@@ -21,10 +21,10 @@ public class ChunkScript : MonoBehaviour
     private byte[][][] data { get; set; }
     private List<GameObject> objects { get; set; } = new List<GameObject>();
 
-    public void RemoveBlock(Vector3Int worldPosition)
+    public void SetBlock(Vector3Int worldPosition, byte value)
     {
         var localPosition = worldPosition - transform.position;
-        data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z] = 0;
+        data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z] = value;
         RecreateMesh();
     }
 
