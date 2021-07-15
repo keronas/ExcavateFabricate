@@ -20,6 +20,7 @@ public class PlayerScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Cursor.lockState = CursorLockMode.Locked;
         controller = GetComponent<CharacterController>();
         playerCamera = GetComponentInChildren<Camera>();
     }
@@ -31,7 +32,7 @@ public class PlayerScript : MonoBehaviour
         {
             ShowPreviewBlock();
 
-            if (Input.GetButton("Fire1"))
+            if (Input.GetButtonDown("Fire1"))
             {
                 CreateBlock();
             }
@@ -40,7 +41,7 @@ public class PlayerScript : MonoBehaviour
         {
             RemovePreviewBlock();
 
-            if (Input.GetButton("Fire1"))
+            if (Input.GetButtonDown("Fire1"))
             {
                 RemoveBlock();
             }
