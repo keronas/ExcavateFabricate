@@ -20,7 +20,8 @@ public class WorldGeneratorScript : MonoBehaviour
 
     public void CreateBlock(Vector3Int worldPosition)
     {
-        var chunk = chunks[worldPosition / (int)ChunkSize].GetComponent<ChunkScript>();
+        var chunkPosition = Vector3Int.FloorToInt((Vector3)worldPosition / ChunkSize); // explicit floor needed for negative numbers
+        var chunk = chunks[chunkPosition].GetComponent<ChunkScript>();
         chunk.SetBlock(worldPosition, 1);
     }
 
