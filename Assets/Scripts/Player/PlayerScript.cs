@@ -25,6 +25,8 @@ public class PlayerScript : MonoBehaviour
         controller = GetComponent<CharacterController>();
         playerCamera = GetComponentInChildren<Camera>();
         worldGenerator = FindObjectOfType<WorldGeneratorScript>();
+
+        playerCamera.farClipPlane = (worldGenerator.ChunkViewDistance - 2) * worldGenerator.ChunkSize;
     }
 
     // Update is called once per frame
