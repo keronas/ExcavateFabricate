@@ -15,6 +15,7 @@ public class PlayerScript : MonoBehaviour
 
     private CharacterController controller;
     private Camera playerCamera;
+    private WorldGeneratorScript worldGenerator;
     private GameObject previewBlock;
 
     // Start is called before the first frame update
@@ -23,6 +24,7 @@ public class PlayerScript : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         controller = GetComponent<CharacterController>();
         playerCamera = GetComponentInChildren<Camera>();
+        worldGenerator = FindObjectOfType<WorldGeneratorScript>();
     }
 
     // Update is called once per frame
@@ -61,7 +63,7 @@ public class PlayerScript : MonoBehaviour
         move = transform.TransformVector(move);
         controller.Move(move * Time.deltaTime * PlayerSpeed);
 
-        var gravityValue = -9.81f;
+        var gravityValue = worldGenerator.IsDoneCreatingChunks ? -9.81f : 0;
         playerVelocity.y += gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
 
@@ -99,7 +101,6 @@ public class PlayerScript : MonoBehaviour
     {
         if (previewBlock != null)
         {
-            var worldGenerator = FindObjectOfType<WorldGeneratorScript>();
             worldGenerator.CreateBlock(Vector3Int.RoundToInt(previewBlock.transform.position));
         }
     }

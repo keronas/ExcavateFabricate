@@ -16,6 +16,7 @@ public class WorldGeneratorScript : MonoBehaviour
     public double HeightWeight;
     public double GroundLevel;
     public bool OptimizeBlocks;
+    public bool IsDoneCreatingChunks { get; private set; } = false;
 
     private Dictionary<Vector3Int, GameObject> allChunks = new Dictionary<Vector3Int, GameObject>();
     private Dictionary<Vector3Int, GameObject> activeChunks = new Dictionary<Vector3Int, GameObject>();
@@ -39,11 +40,16 @@ public class WorldGeneratorScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        RefreshChunks();
         if (chunksToCreate.Any())
         {
             CreateChunk(chunksToCreate.Dequeue());
         }
-        RefreshChunks();
+        else
+        {
+            IsDoneCreatingChunks = true;
+        }
+        
     }
 
     private void RefreshChunks()
