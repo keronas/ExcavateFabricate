@@ -54,13 +54,13 @@ public class WorldGeneratorScript : MonoBehaviour
 
     private void RefreshChunks()
     {
-        var centerPosition = Vector3Int.RoundToInt(ChunkViewCenter.position) / (int)ChunkSize;
+        var centerPosition = Vector3Int.FloorToInt(ChunkViewCenter.position / ChunkSize);
         var newActiveChunks = new Dictionary<Vector3Int, GameObject>();
 
-        for (var z = -(int)ChunkViewDistance; z < ChunkViewDistance; z++)
+        for (var z = -(int)ChunkViewDistance; z <= ChunkViewDistance; z++)
         {
             var circleWidthAtZ = (int)Mathf.Sqrt(ChunkViewDistance * ChunkViewDistance - z * z); // pythagorean theorem to get width at given Z
-            for (var x = -circleWidthAtZ; x < circleWidthAtZ; x++)
+            for (var x = -circleWidthAtZ; x <= circleWidthAtZ; x++)
             {
                 for (var y = 0; y < 2; y++)
                 {
