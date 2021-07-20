@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using LibNoise.Unity;
 using LibNoise.Unity.Generator;
 using UnityEngine;
@@ -26,46 +27,55 @@ public class ChunkScript : MonoBehaviour
         var localPosition = worldPosition - transform.position;
         data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z] = value;
         RecreateMesh();
+        AssignMeshToCollider();
     }
 
     // Start is called before the first frame update
-    void Start()  
+    async void Start()  
     {
-        InitializeData();
-        RecreateMesh();
+        var currentPosition = transform.position;
+        await InitializeData(currentPosition);
+        var meshId = RecreateMesh();
+        await BakeMesh(meshId);
+        AssignMeshToCollider();
     }
 
-    private void InitializeData()
+    private async Task InitializeData(Vector3 currentPosition)
     {
-        data = new byte[ChunkSize][][];
-        for (var x = 0; x < ChunkSize; x++)
+        await Task.Run(() =>
         {
-            data[x] = new byte[ChunkSize][];
-            for (var y = 0; y < ChunkSize; y++)
+            data = new byte[ChunkSize][][];
+            for (var x = 0; x < ChunkSize; x++)
             {
-                data[x][y] = new byte[ChunkSize];
-                for (var z = 0; z < ChunkSize; z++)
+                data[x] = new byte[ChunkSize][];
+                for (var y = 0; y < ChunkSize; y++)
                 {
-                    var localPosition = new Vector3(x, y, z);
-                    var worldPosition = transform.TransformPoint(localPosition);
-                    var perlinPositionMultiplier = 0.04f;
-                    var perlinValue = PerlinGenerator.GetValue(worldPosition * perlinPositionMultiplier);
-                    var heightValue = GroundLevel - worldPosition.y;
+                    data[x][y] = new byte[ChunkSize];
+                    for (var z = 0; z < ChunkSize; z++)
+                    {
+                        var localPosition = new Vector3(x, y, z);
+                        var worldPosition = currentPosition + localPosition;
+                        var perlinPositionMultiplier = 0.04f;
+                        var perlinValue = PerlinGenerator.GetValue(worldPosition * perlinPositionMultiplier);
+                        var heightValue = GroundLevel - worldPosition.y;
 
-                    if (perlinValue * PerlinWeight + heightValue * HeightWeight > 1) 
-                    {
-                        data[x][y][z] = 1;
-                    }
-                    else
-                    {
-                        data[x][y][z] = 0;
+                        if (perlinValue * PerlinWeight + heightValue * HeightWeight > 1)
+                        {
+                            data[x][y][z] = 1;
+                        }
+                        else
+                        {
+                            data[x][y][z] = 0;
+                        }
                     }
                 }
             }
-        }
+        });
     }
 
-    private void RecreateMesh()
+
+    /// <returns>Mesh ID</returns>
+    private int RecreateMesh()
     {
         var combineInstances = new List<CombineInstance>();
 
@@ -97,9 +107,18 @@ public class ChunkScript : MonoBehaviour
         }
 
         var meshFilter = GetComponent<MeshFilter>();
-        Destroy(meshFilter.mesh);
-        meshFilter.mesh = new Mesh();
         meshFilter.mesh.CombineMeshes(combineInstances.ToArray());
+        return meshFilter.mesh.GetInstanceID();
+    }
+
+    private async Task BakeMesh(int meshId)
+    {
+        await Task.Run(() => Physics.BakeMesh(meshId, false));
+    }
+
+    private void AssignMeshToCollider()
+    {
+        var meshFilter = GetComponent<MeshFilter>();
         var meshCollider = GetComponent<MeshCollider>();
         meshCollider.sharedMesh = meshFilter.mesh;
     }
