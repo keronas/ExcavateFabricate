@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using LibNoise.Unity;
 using LibNoise.Unity.Generator;
@@ -11,7 +12,7 @@ using UnityEngine;
 public class ChunkScript : MonoBehaviour
 {
     public Mesh BlockMesh;
-    public Color[] BlockColors;
+    public Color32[] BlockColors;
     public uint ChunkSize;
     public double PerlinWeight;
     public double HeightWeight;
@@ -63,7 +64,7 @@ public class ChunkScript : MonoBehaviour
 
                         if (perlinValue * PerlinWeight + heightValue * HeightWeight > 1)
                         {
-                            data[x][y][z] = (byte)(Mathf.Clamp(y / LayerHeight, 0, BlockColors.Length - 1) + 1);
+                            data[x][y][z] = (byte)(Mathf.Clamp(worldPosition.y / LayerHeight, 0, BlockColors.Length - 1) + 1);
                         }
                         else
                         {
@@ -79,7 +80,10 @@ public class ChunkScript : MonoBehaviour
     /// <returns>Mesh ID</returns>
     private int RecreateMesh()
     {
-        var combineInstances = new List<CombineInstance>();
+        var vertices = new List<Vector3>();
+        var normals = new List<Vector3>();
+        var triangles = new List<int>();
+        var colors = new List<Color32>();
 
         for (var x = 0; x < ChunkSize; x++)
         {
@@ -99,18 +103,11 @@ public class ChunkScript : MonoBehaviour
                             (y + 1 >= ChunkSize || data[x][y + 1][z] == 0) ||
                             (z + 1 >= ChunkSize || data[x][y][z + 1] == 0))
                         {
-                            var combineInstance = new CombineInstance();
-                            combineInstance.mesh = BlockMesh;
-                            combineInstance.transform = Matrix4x4.Translate(new Vector3(x, y, z));
-
-                            var colors = new Color[combineInstance.mesh.vertices.Length];
-                            for (var i = 0; i < colors.Length; i++)
-                            {
-                                colors[i] = BlockColors[blockValue - 1];
-                            }
-                            combineInstance.mesh.colors = colors;
-
-                            combineInstances.Add(combineInstance);
+                            var existingVerticesCount = vertices.Count;
+                            vertices.AddRange(BlockMesh.vertices.Select(vertex => vertex + new Vector3(x, y, z)));
+                            normals.AddRange(BlockMesh.normals);
+                            triangles.AddRange(BlockMesh.triangles.Select(vertexId => vertexId + existingVerticesCount));
+                            colors.AddRange(Enumerable.Repeat(BlockColors[blockValue - 1], BlockMesh.vertices.Length));
                         }
                     }
                 }
@@ -118,7 +115,13 @@ public class ChunkScript : MonoBehaviour
         }
 
         var meshFilter = GetComponent<MeshFilter>();
-        meshFilter.mesh.CombineMeshes(combineInstances.ToArray());
+        var mesh = new Mesh();
+        mesh.vertices = vertices.ToArray();
+        mesh.normals = normals.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.colors32 = colors.ToArray();
+        Destroy(meshFilter.mesh);
+        meshFilter.mesh = mesh;
         return meshFilter.mesh.GetInstanceID();
     }
 

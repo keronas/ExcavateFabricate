@@ -9,7 +9,7 @@ public class WorldGeneratorScript : MonoBehaviour
 {
     public Mesh BlockMesh;
     public Material BlockMaterial;
-    public Color[] BlockColors;
+    public Color32[] BlockColors;
     public Transform ChunkViewCenter;
     public uint ChunkSize;
     public uint ChunkViewDistance;
