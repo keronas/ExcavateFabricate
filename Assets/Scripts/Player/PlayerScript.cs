@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Scripting;
+using UnityEngine.UI;
 
 [RequireComponent(typeof (CharacterController))]
 public class PlayerScript : MonoBehaviour
@@ -10,23 +12,33 @@ public class PlayerScript : MonoBehaviour
     public float PlayerSpeed = 10;
     public float JumpSpeed = 8;
     public GameObject PreviewBlockPrefab;
-
+    public WorldGeneratorScript WorldGenerator;
+    public GameObject[] BlockTypePanels;
+    
     private Vector3 playerVelocity;
-
     private CharacterController controller;
     private Camera playerCamera;
-    private WorldGeneratorScript worldGenerator;
     private GameObject previewBlock;
+    private float defaultBlockTypePanelVerticalSize;
+    private byte chosenBlockType;
 
     // Start is called before the first frame update
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
         controller = GetComponent<CharacterController>();
         playerCamera = GetComponentInChildren<Camera>();
-        worldGenerator = FindObjectOfType<WorldGeneratorScript>();
 
-        playerCamera.farClipPlane = (worldGenerator.ChunkViewDistance - 2) * worldGenerator.ChunkSize;
+        Cursor.lockState = CursorLockMode.Locked;
+
+        playerCamera.farClipPlane = (WorldGenerator.ChunkViewDistance - 2) * WorldGenerator.ChunkSize;
+
+        foreach(var (color, panel) in WorldGenerator.BlockColors.Zip(BlockTypePanels, (color, panel) => (color, panel)))
+        {
+            panel.GetComponent<Image>().color = color;
+        }
+
+        defaultBlockTypePanelVerticalSize = BlockTypePanels[0].GetComponent<RectTransform>().sizeDelta.y;
+        ChooseBlockType(1);
     }
 
     // Update is called once per frame
@@ -51,6 +63,14 @@ public class PlayerScript : MonoBehaviour
             }
         }
 
+        for (int i = 0; i < BlockTypePanels.Length; i++)
+        {
+            if (Input.GetButtonDown($"Select{i + 1}"))
+            {
+                ChooseBlockType((byte)(i + 1));
+            }
+        }
+
         var groundedPlayer = controller.isGrounded;
         if (groundedPlayer && playerVelocity.y < 0)
         {
@@ -65,12 +85,23 @@ public class PlayerScript : MonoBehaviour
         move = transform.TransformVector(move);
         controller.Move(move * Time.deltaTime * PlayerSpeed);
 
-        var gravityValue = worldGenerator.IsDoneCreatingChunks ? -9.81f : 0;
+        var gravityValue = WorldGenerator.IsDoneCreatingChunks ? -9.81f : 0;
         playerVelocity.y += gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
 
         transform.Rotate(0, Input.GetAxis("Mouse X"), 0);
         playerCamera.transform.Rotate(-Input.GetAxis("Mouse Y"), 0, 0);
+    }
+
+    private void ChooseBlockType(byte type)
+    {
+        var rect = BlockTypePanels[type - 1].GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(rect.sizeDelta.x, defaultBlockTypePanelVerticalSize + 40);
+        foreach (GameObject panel in BlockTypePanels.Except(new[] { BlockTypePanels[type - 1] }))
+        {
+            panel.GetComponent<RectTransform>().sizeDelta = new Vector2(rect.sizeDelta.x, defaultBlockTypePanelVerticalSize);
+        }
+        chosenBlockType = type;
     }
 
     private void ShowPreviewBlock()
@@ -103,7 +134,7 @@ public class PlayerScript : MonoBehaviour
     {
         if (previewBlock != null)
         {
-            worldGenerator.CreateBlock(Vector3Int.RoundToInt(previewBlock.transform.position));
+            WorldGenerator.CreateBlock(Vector3Int.RoundToInt(previewBlock.transform.position), chosenBlockType);
         }
     }
 

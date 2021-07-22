@@ -26,11 +26,11 @@ public class WorldGeneratorScript : MonoBehaviour
 
     private Perlin perlinGenerator = new Perlin();
 
-    public void CreateBlock(Vector3Int worldPosition)
+    public void CreateBlock(Vector3Int worldPosition, byte blockType)
     {
         var chunkPosition = Vector3Int.FloorToInt((Vector3)worldPosition / ChunkSize); // explicit floor needed for negative numbers
         var chunk = activeChunks[chunkPosition].GetComponent<ChunkScript>();
-        chunk.SetBlock(worldPosition, 1);
+        chunk.SetBlock(worldPosition, blockType);
     }
 
     // Start is called before the first frame update
