@@ -11,10 +11,12 @@ using UnityEngine;
 public class ChunkScript : MonoBehaviour
 {
     public Mesh BlockMesh;
+    public Color[] BlockColors;
     public uint ChunkSize;
     public double PerlinWeight;
     public double HeightWeight;
     public double GroundLevel;
+    public uint LayerHeight;
     public bool OptimizeBlocks;
     public Perlin PerlinGenerator;
 
@@ -61,7 +63,7 @@ public class ChunkScript : MonoBehaviour
 
                         if (perlinValue * PerlinWeight + heightValue * HeightWeight > 1)
                         {
-                            data[x][y][z] = 1;
+                            data[x][y][z] = (byte)(Mathf.Clamp(y / LayerHeight, 0, BlockColors.Length - 1) + 1);
                         }
                         else
                         {
@@ -85,7 +87,8 @@ public class ChunkScript : MonoBehaviour
             {
                 for (var z = 0; z < ChunkSize; z++)
                 {
-                    if (data[x][y][z] != 0)
+                    var blockValue = data[x][y][z];
+                    if (blockValue != 0)
                     {
                         // If any neighbouring space outside chunk or doesn't contain any block, then current block may be visible
                         if (!OptimizeBlocks ||
@@ -99,6 +102,14 @@ public class ChunkScript : MonoBehaviour
                             var combineInstance = new CombineInstance();
                             combineInstance.mesh = BlockMesh;
                             combineInstance.transform = Matrix4x4.Translate(new Vector3(x, y, z));
+
+                            var colors = new Color[combineInstance.mesh.vertices.Length];
+                            for (var i = 0; i < colors.Length; i++)
+                            {
+                                colors[i] = BlockColors[blockValue - 1];
+                            }
+                            combineInstance.mesh.colors = colors;
+
                             combineInstances.Add(combineInstance);
                         }
                     }

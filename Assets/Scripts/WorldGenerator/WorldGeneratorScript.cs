@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using LibNoise.Unity.Generator;
 using UnityEngine;
 
@@ -9,12 +9,14 @@ public class WorldGeneratorScript : MonoBehaviour
 {
     public Mesh BlockMesh;
     public Material BlockMaterial;
+    public Color[] BlockColors;
     public Transform ChunkViewCenter;
     public uint ChunkSize;
     public uint ChunkViewDistance;
     public double PerlinWeight;
     public double HeightWeight;
     public double GroundLevel;
+    public uint LayerHeight;
     public bool OptimizeBlocks;
     public bool IsDoneCreatingChunks { get; private set; } = false;
 
@@ -93,10 +95,12 @@ public class WorldGeneratorScript : MonoBehaviour
         meshRenderer.material = BlockMaterial;
         var chunkScript = chunk.AddComponent<ChunkScript>();
         chunkScript.BlockMesh = BlockMesh;
+        chunkScript.BlockColors = BlockColors;
         chunkScript.ChunkSize = ChunkSize;
         chunkScript.PerlinWeight = PerlinWeight;
         chunkScript.HeightWeight = HeightWeight;
         chunkScript.GroundLevel = GroundLevel;
+        chunkScript.LayerHeight = LayerHeight;
         chunkScript.OptimizeBlocks = OptimizeBlocks;
         chunkScript.PerlinGenerator = perlinGenerator;
         allChunks.Add(position, chunk);

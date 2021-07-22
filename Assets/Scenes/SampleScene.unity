@@ -588,13 +588,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BlockMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  BlockMaterial: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  BlockMaterial: {fileID: 2100000, guid: 35ca064d3798a85479cd19091c613b8a, type: 2}
+  BlockColors:
+  - {r: 0.20754719, g: 0.062930085, b: 0, a: 1}
+  - {r: 0.3018868, g: 0.3018868, b: 0.3018868, a: 1}
+  - {r: 0.08439591, g: 0.3773585, b: 0, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
   ChunkViewCenter: {fileID: 1761726302}
   ChunkSize: 20
   ChunkViewDistance: 10
   PerlinWeight: 4
   HeightWeight: 0.6
   GroundLevel: 12
+  LayerHeight: 5
   OptimizeBlocks: 1
 --- !u!1 &1761726298
 GameObject:
