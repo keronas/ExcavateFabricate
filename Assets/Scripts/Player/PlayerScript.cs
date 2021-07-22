@@ -95,8 +95,9 @@ public class PlayerScript : MonoBehaviour
 
     private void ChooseBlockType(byte type)
     {
+        var selectedPanelSizeDifference = 40;
         var rect = BlockTypePanels[type - 1].GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(rect.sizeDelta.x, defaultBlockTypePanelVerticalSize + 40);
+        rect.sizeDelta = new Vector2(rect.sizeDelta.x, defaultBlockTypePanelVerticalSize + selectedPanelSizeDifference);
         foreach (GameObject panel in BlockTypePanels.Except(new[] { BlockTypePanels[type - 1] }))
         {
             panel.GetComponent<RectTransform>().sizeDelta = new Vector2(rect.sizeDelta.x, defaultBlockTypePanelVerticalSize);
