@@ -21,7 +21,7 @@ public class ChunkScript : MonoBehaviour
     public bool OptimizeBlocks;
     public Perlin PerlinGenerator;
 
-
+    private MeshData blockMeshData;
     private byte[][][] data { get; set; }
     private List<GameObject> objects { get; set; } = new List<GameObject>();
 
@@ -29,21 +29,22 @@ public class ChunkScript : MonoBehaviour
     {
         var localPosition = worldPosition - transform.position;
         data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z] = value;
-        RecreateMesh();
+        AssignMeshDataToFilter(CreateMeshData(blockMeshData));
         AssignMeshToCollider();
     }
 
     // Start is called before the first frame update
     async void Start()  
     {
-        var currentPosition = transform.position;
-        await InitializeData(currentPosition);
-        var meshId = RecreateMesh();
-        await BakeMesh(meshId);
+        blockMeshData = new MeshData(BlockMesh);
+        await InitializeDataAsync(transform.position);
+        var meshData = await Task.Run(() => CreateMeshData(blockMeshData));
+        var meshId = AssignMeshDataToFilter(meshData);
+        await BakeMeshAsync(meshId);
         AssignMeshToCollider();
     }
 
-    private async Task InitializeData(Vector3 currentPosition)
+    private async Task InitializeDataAsync(Vector3 currentPosition)
     {
         await Task.Run(() =>
         {
@@ -76,9 +77,7 @@ public class ChunkScript : MonoBehaviour
         });
     }
 
-
-    /// <returns>Mesh ID</returns>
-    private int RecreateMesh()
+    private MeshData CreateMeshData(MeshData blockMeshData)
     {
         var vertices = new List<Vector3>();
         var normals = new List<Vector3>();
@@ -104,28 +103,34 @@ public class ChunkScript : MonoBehaviour
                             (z + 1 >= ChunkSize || data[x][y][z + 1] == 0))
                         {
                             var existingVerticesCount = vertices.Count;
-                            vertices.AddRange(BlockMesh.vertices.Select(vertex => vertex + new Vector3(x, y, z)));
-                            normals.AddRange(BlockMesh.normals);
-                            triangles.AddRange(BlockMesh.triangles.Select(vertexId => vertexId + existingVerticesCount));
-                            colors.AddRange(Enumerable.Repeat(BlockColors[blockValue - 1], BlockMesh.vertices.Length));
+                            vertices.AddRange(blockMeshData.Vertices.Select(vertex => vertex + new Vector3(x, y, z)));
+                            normals.AddRange(blockMeshData.Normals);
+                            triangles.AddRange(blockMeshData.Triangles.Select(vertexId => vertexId + existingVerticesCount));
+                            colors.AddRange(Enumerable.Repeat(BlockColors[blockValue - 1], blockMeshData.Vertices.Length));
                         }
                     }
                 }
             }
         }
 
-        var meshFilter = GetComponent<MeshFilter>();
+        return new MeshData(vertices.ToArray(), normals.ToArray(), triangles.ToArray(), colors.ToArray());
+    }
+
+    /// <returns>Mesh ID</returns>
+    private int AssignMeshDataToFilter(MeshData meshData)
+    {
         var mesh = new Mesh();
-        mesh.vertices = vertices.ToArray();
-        mesh.normals = normals.ToArray();
-        mesh.triangles = triangles.ToArray();
-        mesh.colors32 = colors.ToArray();
+        mesh.vertices = meshData.Vertices;
+        mesh.normals = meshData.Normals;
+        mesh.triangles = meshData.Triangles;
+        mesh.colors32 = meshData.Colors;
+        var meshFilter = GetComponent<MeshFilter>();
         Destroy(meshFilter.mesh);
         meshFilter.mesh = mesh;
         return meshFilter.mesh.GetInstanceID();
     }
 
-    private async Task BakeMesh(int meshId)
+    private async Task BakeMeshAsync(int meshId)
     {
         await Task.Run(() => Physics.BakeMesh(meshId, false));
     }
