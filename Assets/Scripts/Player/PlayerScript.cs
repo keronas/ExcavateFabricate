@@ -36,9 +36,9 @@ public class PlayerScript : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
 
-        playerCamera.farClipPlane = (WorldGenerator.ChunkViewDistance - 2) * WorldGenerator.ChunkSize;
+        playerCamera.farClipPlane = (WorldGenerator.ChunkViewDistance - 2) * WorldGenerator.ChunkSettings.ChunkSize;
 
-        foreach(var (color, panel) in WorldGenerator.BlockColors.Zip(BlockTypePanels, (color, panel) => (color, panel)))
+        foreach(var (color, panel) in WorldGenerator.ChunkSettings.BlockColors.Zip(BlockTypePanels, (color, panel) => (color, panel)))
         {
             panel.GetComponent<Image>().color = color;
         }

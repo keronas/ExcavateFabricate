@@ -8,18 +8,9 @@ using UnityEngine;
 
 public class WorldGeneratorScript : MonoBehaviour
 {
-    public Mesh BlockMesh;
-    public Material BlockMaterial;
-    public Color32[] BlockColors;
-    public uint[] BlockDestroyDurationsMillis;
+    public ChunkSettingsScript ChunkSettings;
     public Transform ChunkViewCenter;
-    public uint ChunkSize;
     public uint ChunkViewDistance;
-    public double PerlinWeight;
-    public double HeightWeight;
-    public double GroundLevel;
-    public uint LayerHeight;
-    public bool OptimizeBlocks;
     public bool IsDoneCreatingChunks { get; private set; } = false;
 
     private Dictionary<Vector3Int, GameObject> allChunks = new Dictionary<Vector3Int, GameObject>();
@@ -30,7 +21,7 @@ public class WorldGeneratorScript : MonoBehaviour
 
     public void CreateBlock(Vector3Int worldPosition, byte blockType)
     {
-        var chunkPosition = Vector3Int.FloorToInt((Vector3)worldPosition / ChunkSize); // explicit floor needed for negative numbers
+        var chunkPosition = Vector3Int.FloorToInt((Vector3)worldPosition / ChunkSettings.ChunkSize); // explicit floor needed for negative numbers
         var chunk = activeChunks[chunkPosition].GetComponent<ChunkScript>();
         chunk.SetBlock(worldPosition, blockType);
     }
@@ -53,12 +44,11 @@ public class WorldGeneratorScript : MonoBehaviour
         {
             IsDoneCreatingChunks = true;
         }
-        
     }
 
     private void RefreshChunks()
     {
-        var centerPosition = Vector3Int.FloorToInt(ChunkViewCenter.position / ChunkSize);
+        var centerPosition = Vector3Int.FloorToInt(ChunkViewCenter.position / ChunkSettings.ChunkSize);
         var newActiveChunks = new Dictionary<Vector3Int, GameObject>();
 
         for (var z = -(int)ChunkViewDistance; z <= ChunkViewDistance; z++)
@@ -91,20 +81,12 @@ public class WorldGeneratorScript : MonoBehaviour
     private GameObject CreateChunk(Vector3Int position)
     {
         var chunk = new GameObject($"Chunk {position.x};{position.y};{position.z}");
-        chunk.transform.position = (Vector3)position * ChunkSize;
+        chunk.transform.position = (Vector3)position * ChunkSettings.ChunkSize;
         chunk.layer = 6;
         var meshRenderer = chunk.AddComponent<MeshRenderer>();
-        meshRenderer.material = BlockMaterial;
+        meshRenderer.material = ChunkSettings.BlockMaterial;
         var chunkScript = chunk.AddComponent<ChunkScript>();
-        chunkScript.BlockMesh = BlockMesh;
-        chunkScript.BlockColors = BlockColors;
-        chunkScript.BlockDestroyDurations = BlockDestroyDurationsMillis.Select(millis => TimeSpan.FromMilliseconds(millis)).ToArray();
-        chunkScript.ChunkSize = ChunkSize;
-        chunkScript.PerlinWeight = PerlinWeight;
-        chunkScript.HeightWeight = HeightWeight;
-        chunkScript.GroundLevel = GroundLevel;
-        chunkScript.LayerHeight = LayerHeight;
-        chunkScript.OptimizeBlocks = OptimizeBlocks;
+        chunkScript.ChunkSettings = ChunkSettings;
         chunkScript.PerlinGenerator = perlinGenerator;
         allChunks.Add(position, chunk);
         activeChunks[position] = chunk;
