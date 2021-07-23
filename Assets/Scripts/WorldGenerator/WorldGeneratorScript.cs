@@ -29,7 +29,7 @@ public class WorldGeneratorScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        perlinGenerator.Seed = new System.Random().Next();
     }
 
     // Update is called once per frame
