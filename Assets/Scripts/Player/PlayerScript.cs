@@ -20,7 +20,7 @@ public class PlayerScript : MonoBehaviour
     private CharacterController controller;
     private Camera playerCamera;
     private GameObject previewBlock;
-    private float defaultBlockTypePanelVerticalSize;
+    private float defaultBlockTypePanelHeight;
     private byte chosenBlockType;
     private Vector3Int? blockToDestroy;
     private DateTime blockDestroyStartTime;
@@ -45,7 +45,7 @@ public class PlayerScript : MonoBehaviour
 
         defaultBlockDestroyProgressPanelWidth = BlockDestroyProgressPanel.rect.width;
 
-        defaultBlockTypePanelVerticalSize = BlockTypePanels[0].GetComponent<RectTransform>().sizeDelta.y;
+        defaultBlockTypePanelHeight = BlockTypePanels[0].GetComponent<RectTransform>().rect.height;
         ChooseBlockType(1);
     }
 
@@ -110,10 +110,10 @@ public class PlayerScript : MonoBehaviour
     {
         var selectedPanelSizeDifference = 40;
         var rect = BlockTypePanels[type - 1].GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(rect.sizeDelta.x, defaultBlockTypePanelVerticalSize + selectedPanelSizeDifference);
+        rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, defaultBlockTypePanelHeight + selectedPanelSizeDifference);
         foreach (GameObject panel in BlockTypePanels.Except(new[] { BlockTypePanels[type - 1] }))
         {
-            panel.GetComponent<RectTransform>().sizeDelta = new Vector2(rect.sizeDelta.x, defaultBlockTypePanelVerticalSize);
+            panel.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, defaultBlockTypePanelHeight);
         }
         chosenBlockType = type;
     }
