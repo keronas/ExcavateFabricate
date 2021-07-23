@@ -21,6 +21,9 @@ public class PlayerScript : MonoBehaviour
     private GameObject previewBlock;
     private float defaultBlockTypePanelVerticalSize;
     private byte chosenBlockType;
+    private Vector3Int? blockToDestroy;
+    private DateTime blockDestroyingStartTime;
+    private TimeSpan blockDestroyDuration;
 
     // Start is called before the first frame update
     void Start()
@@ -46,6 +49,7 @@ public class PlayerScript : MonoBehaviour
     {
         if (Input.GetButton("Fire2"))
         {
+            StopDestroyingBlock();
             ShowPreviewBlock();
 
             if (Input.GetButtonDown("Fire1"))
@@ -57,9 +61,13 @@ public class PlayerScript : MonoBehaviour
         {
             RemovePreviewBlock();
 
-            if (Input.GetButtonDown("Fire1"))
+            if (Input.GetButton("Fire1"))
             {
-                RemoveBlock();
+                ProgressDestroyingBlock();
+            }
+            else
+            {
+                StopDestroyingBlock();
             }
         }
 
@@ -139,14 +147,37 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-    private void RemoveBlock()
+    private void ProgressDestroyingBlock()
     {
         var position = FindBlockPositionAtCursor(false, out var colliderHit);
+        
         if (position != null)
         {
             var chunk = colliderHit.gameObject.GetComponent<ChunkScript>();
-            chunk.SetBlock((Vector3Int)position, 0);
+            if (position == blockToDestroy)
+            {
+                if (blockDestroyingStartTime + blockDestroyDuration < DateTime.Now)
+                {
+                    chunk.SetBlock((Vector3Int)position, 0);
+                    StopDestroyingBlock();
+                }
+            }
+            else
+            {
+                blockToDestroy = position;
+                blockDestroyingStartTime = DateTime.Now;
+                blockDestroyDuration = chunk.GetBlockDestroyDuration((Vector3Int)position);
+            }
         }
+        else
+        {
+            StopDestroyingBlock();
+        }
+    }
+
+    private void StopDestroyingBlock()
+    {
+        blockToDestroy = null;
     }
 
     private Vector3Int? FindBlockPositionAtCursor(bool outsideBlock, out Collider colliderHit)

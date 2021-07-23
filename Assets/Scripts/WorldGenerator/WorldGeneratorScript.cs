@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ public class WorldGeneratorScript : MonoBehaviour
     public Mesh BlockMesh;
     public Material BlockMaterial;
     public Color32[] BlockColors;
+    public uint[] BlockDestroyDurationsMillis;
     public Transform ChunkViewCenter;
     public uint ChunkSize;
     public uint ChunkViewDistance;
@@ -96,6 +98,7 @@ public class WorldGeneratorScript : MonoBehaviour
         var chunkScript = chunk.AddComponent<ChunkScript>();
         chunkScript.BlockMesh = BlockMesh;
         chunkScript.BlockColors = BlockColors;
+        chunkScript.BlockDestroyDurations = BlockDestroyDurationsMillis.Select(millis => TimeSpan.FromMilliseconds(millis)).ToArray();
         chunkScript.ChunkSize = ChunkSize;
         chunkScript.PerlinWeight = PerlinWeight;
         chunkScript.HeightWeight = HeightWeight;

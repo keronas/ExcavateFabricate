@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ public class ChunkScript : MonoBehaviour
 {
     public Mesh BlockMesh;
     public Color32[] BlockColors;
+    public TimeSpan[] BlockDestroyDurations;
     public uint ChunkSize;
     public double PerlinWeight;
     public double HeightWeight;
@@ -31,6 +33,13 @@ public class ChunkScript : MonoBehaviour
         data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z] = value;
         AssignMeshDataToFilter(CreateMeshData(blockMeshData));
         AssignMeshToCollider();
+    }
+
+    public TimeSpan GetBlockDestroyDuration(Vector3Int worldPosition)
+    {
+        var localPosition = worldPosition - transform.position;
+        var blockValue = data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z];
+        return BlockDestroyDurations[blockValue - 1];
     }
 
     // Start is called before the first frame update
