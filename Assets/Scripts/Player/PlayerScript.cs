@@ -14,7 +14,8 @@ public class PlayerScript : MonoBehaviour
     public GameObject PreviewBlockPrefab;
     public WorldGeneratorScript WorldGenerator;
     public GameObject[] BlockTypePanels;
-    
+    public RectTransform BlockDestroyProgressPanel;
+
     private Vector3 playerVelocity;
     private CharacterController controller;
     private Camera playerCamera;
@@ -22,8 +23,10 @@ public class PlayerScript : MonoBehaviour
     private float defaultBlockTypePanelVerticalSize;
     private byte chosenBlockType;
     private Vector3Int? blockToDestroy;
-    private DateTime blockDestroyingStartTime;
+    private DateTime blockDestroyStartTime;
     private TimeSpan blockDestroyDuration;
+    private float BlockDestroyProgress => Mathf.Min(1, (float)((DateTime.Now - blockDestroyStartTime).TotalMilliseconds / blockDestroyDuration.TotalMilliseconds));
+    private float defaultBlockDestroyProgressPanelWidth;
 
     // Start is called before the first frame update
     void Start()
@@ -39,6 +42,8 @@ public class PlayerScript : MonoBehaviour
         {
             panel.GetComponent<Image>().color = color;
         }
+
+        defaultBlockDestroyProgressPanelWidth = BlockDestroyProgressPanel.rect.width;
 
         defaultBlockTypePanelVerticalSize = BlockTypePanels[0].GetComponent<RectTransform>().sizeDelta.y;
         ChooseBlockType(1);
@@ -156,16 +161,20 @@ public class PlayerScript : MonoBehaviour
             var chunk = colliderHit.gameObject.GetComponent<ChunkScript>();
             if (position == blockToDestroy)
             {
-                if (blockDestroyingStartTime + blockDestroyDuration < DateTime.Now)
+                if (BlockDestroyProgress >= 1)
                 {
                     chunk.SetBlock((Vector3Int)position, 0);
                     StopDestroyingBlock();
+                }
+                else
+                {
+                    BlockDestroyProgressPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, defaultBlockDestroyProgressPanelWidth * BlockDestroyProgress);
                 }
             }
             else
             {
                 blockToDestroy = position;
-                blockDestroyingStartTime = DateTime.Now;
+                blockDestroyStartTime = DateTime.Now;
                 blockDestroyDuration = chunk.GetBlockDestroyDuration((Vector3Int)position);
             }
         }
@@ -178,6 +187,7 @@ public class PlayerScript : MonoBehaviour
     private void StopDestroyingBlock()
     {
         blockToDestroy = null;
+        BlockDestroyProgressPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 0);
     }
 
     private Vector3Int? FindBlockPositionAtCursor(bool outsideBlock, out Collider colliderHit)
