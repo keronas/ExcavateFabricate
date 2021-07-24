@@ -12,6 +12,7 @@ public class WorldGeneratorScript : MonoBehaviour
     public Transform ChunkViewCenter;
     public uint ChunkViewDistance;
     public bool IsDoneCreatingChunks { get; private set; } = false;
+    public ChunkScript[] AllChunkScripts => allChunks.Values.Select(ob => ob.GetComponent<ChunkScript>()).ToArray();
 
     private Dictionary<Vector3Int, GameObject> allChunks = new Dictionary<Vector3Int, GameObject>();
     private Dictionary<Vector3Int, GameObject> activeChunks = new Dictionary<Vector3Int, GameObject>();

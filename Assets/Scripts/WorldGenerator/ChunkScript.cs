@@ -16,13 +16,13 @@ public class ChunkScript : MonoBehaviour
     public Perlin PerlinGenerator;
 
     private MeshData blockMeshData;
-    private byte[][][] data { get; set; }
-    private List<GameObject> objects { get; set; } = new List<GameObject>();
+    public byte[][][] Data { get; private set; }
+    public Vector3Int Position { get; private set; }
 
     public void SetBlock(Vector3Int worldPosition, byte value)
     {
         var localPosition = worldPosition - transform.position;
-        data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z] = value;
+        Data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z] = value;
         AssignMeshDataToFilter(CreateMeshData(blockMeshData));
         AssignMeshToCollider();
     }
@@ -30,13 +30,14 @@ public class ChunkScript : MonoBehaviour
     public TimeSpan GetBlockDestroyDuration(Vector3Int worldPosition)
     {
         var localPosition = worldPosition - transform.position;
-        var blockValue = data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z];
+        var blockValue = Data[(int)localPosition.x][(int)localPosition.y][(int)localPosition.z];
         return TimeSpan.FromMilliseconds(ChunkSettings.BlockDestroyDurationsMillis[blockValue - 1]);
     }
 
     // Start is called before the first frame update
     async void Start()  
     {
+        Position = Vector3Int.RoundToInt(transform.position);
         blockMeshData = new MeshData(ChunkSettings.BlockMesh);
         await InitializeDataAsync(transform.position);
         var meshData = await Task.Run(() => CreateMeshData(blockMeshData));
@@ -50,13 +51,13 @@ public class ChunkScript : MonoBehaviour
         await Task.Run(() =>
         {
             var chunkSize = ChunkSettings.ChunkSize;
-            data = new byte[chunkSize][][];
+            Data = new byte[chunkSize][][];
             for (var x = 0; x < chunkSize; x++)
             {
-                data[x] = new byte[chunkSize][];
+                Data[x] = new byte[chunkSize][];
                 for (var y = 0; y < chunkSize; y++)
                 {
-                    data[x][y] = new byte[chunkSize];
+                    Data[x][y] = new byte[chunkSize];
                     for (var z = 0; z < chunkSize; z++)
                     {
                         var localPosition = new Vector3(x, y, z);
@@ -67,11 +68,11 @@ public class ChunkScript : MonoBehaviour
 
                         if (perlinValue * ChunkSettings.PerlinWeight + heightValue * ChunkSettings.HeightWeight > 1)
                         {
-                            data[x][y][z] = (byte)(Mathf.Clamp(worldPosition.y / ChunkSettings.LayerHeight, 0, ChunkSettings.BlockColors.Length - 1) + 1);
+                            Data[x][y][z] = (byte)(Mathf.Clamp(worldPosition.y / ChunkSettings.LayerHeight, 0, ChunkSettings.BlockColors.Length - 1) + 1);
                         }
                         else
                         {
-                            data[x][y][z] = 0;
+                            Data[x][y][z] = 0;
                         }
                     }
                 }
@@ -93,17 +94,17 @@ public class ChunkScript : MonoBehaviour
             {
                 for (var z = 0; z < chunkSize; z++)
                 {
-                    var blockValue = data[x][y][z];
+                    var blockValue = Data[x][y][z];
                     if (blockValue != 0)
                     {
                         // If any neighbouring space outside chunk or doesn't contain any block, then current block may be visible
                         if (!ChunkSettings.OptimizeBlocks ||
-                            (x - 1 < 0 || data[x - 1][y][z] == 0) ||
-                            (y - 1 < 0 || data[x][y - 1][z] == 0) ||
-                            (z - 1 < 0 || data[x][y][z - 1] == 0) ||
-                            (x + 1 >= chunkSize || data[x + 1][y][z] == 0) ||
-                            (y + 1 >= chunkSize || data[x][y + 1][z] == 0) ||
-                            (z + 1 >= chunkSize || data[x][y][z + 1] == 0))
+                            (x - 1 < 0 || Data[x - 1][y][z] == 0) ||
+                            (y - 1 < 0 || Data[x][y - 1][z] == 0) ||
+                            (z - 1 < 0 || Data[x][y][z - 1] == 0) ||
+                            (x + 1 >= chunkSize || Data[x + 1][y][z] == 0) ||
+                            (y + 1 >= chunkSize || Data[x][y + 1][z] == 0) ||
+                            (z + 1 >= chunkSize || Data[x][y][z + 1] == 0))
                         {
                             var existingVerticesCount = vertices.Count;
                             vertices.AddRange(blockMeshData.Vertices.Select(vertex => vertex + new Vector3(x, y, z)));
