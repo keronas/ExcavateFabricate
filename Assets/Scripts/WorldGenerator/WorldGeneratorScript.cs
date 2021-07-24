@@ -27,6 +27,25 @@ public class WorldGeneratorScript : MonoBehaviour
         chunk.SetBlock(worldPosition, blockType);
     }
 
+    public void LoadChunks(IEnumerable<(Vector3Int, byte[][][])> chunks)
+    {
+        foreach (var chunk in allChunks.Values)
+        {
+            Destroy(chunk);
+        }
+        allChunks.Clear();
+        activeChunks.Clear();
+        chunksToCreate.Clear();
+
+        foreach (var chunkData in chunks)
+        {
+            CreateChunk(chunkData.Item1, chunkData.Item2);
+        }
+
+        IsDoneCreatingChunks = false;
+        RefreshChunks();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -39,7 +58,8 @@ public class WorldGeneratorScript : MonoBehaviour
         RefreshChunks();
         if (chunksToCreate.Any())
         {
-            CreateChunk(chunksToCreate.Dequeue());
+            var chunkPosition = chunksToCreate.Dequeue();
+            activeChunks[chunkPosition] = CreateChunk(chunkPosition);
         }
         else
         {
@@ -79,7 +99,7 @@ public class WorldGeneratorScript : MonoBehaviour
         activeChunks = newActiveChunks;
     }
 
-    private GameObject CreateChunk(Vector3Int position)
+    private GameObject CreateChunk(Vector3Int position, byte[][][] data = null)
     {
         var chunk = new GameObject($"Chunk {position.x};{position.y};{position.z}");
         chunk.transform.position = (Vector3)position * ChunkSettings.ChunkSize;
@@ -87,10 +107,11 @@ public class WorldGeneratorScript : MonoBehaviour
         var meshRenderer = chunk.AddComponent<MeshRenderer>();
         meshRenderer.material = ChunkSettings.BlockMaterial;
         var chunkScript = chunk.AddComponent<ChunkScript>();
+        if (data != null)
+            chunkScript.Data = data;
         chunkScript.ChunkSettings = ChunkSettings;
         chunkScript.PerlinGenerator = perlinGenerator;
         allChunks.Add(position, chunk);
-        activeChunks[position] = chunk;
         return chunk;
     }
 }

@@ -16,7 +16,7 @@ public class ChunkScript : MonoBehaviour
     public Perlin PerlinGenerator;
 
     private MeshData blockMeshData;
-    public byte[][][] Data { get; private set; }
+    public byte[][][] Data { get; set; }
     public Vector3Int Position { get; private set; }
 
     public void SetBlock(Vector3Int worldPosition, byte value)
@@ -37,9 +37,12 @@ public class ChunkScript : MonoBehaviour
     // Start is called before the first frame update
     async void Start()  
     {
-        Position = Vector3Int.RoundToInt(transform.position);
+        Position = Vector3Int.RoundToInt(transform.position) / (int)ChunkSettings.ChunkSize;
         blockMeshData = new MeshData(ChunkSettings.BlockMesh);
-        await InitializeDataAsync(transform.position);
+        if (Data == null) // data not been set manually
+        {
+            await InitializeDataAsync(transform.position);
+        }
         var meshData = await Task.Run(() => CreateMeshData(blockMeshData));
         var meshId = AssignMeshDataToFilter(meshData);
         await BakeMeshAsync(meshId);

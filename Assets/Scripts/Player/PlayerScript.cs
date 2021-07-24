@@ -28,18 +28,19 @@ public class PlayerScript : MonoBehaviour
     private float BlockDestroyProgress => Mathf.Min(1, (float)((DateTime.Now - blockDestroyStartTime).TotalMilliseconds / blockDestroyDuration.TotalMilliseconds));
     private float defaultBlockDestroyProgressPanelWidth;
 
-    public float CameraRotationX
+    public float CameraRotationX => playerCamera.transform.rotation.eulerAngles.x;
+
+    public void LoadTransform(Vector3 position, float xRotation, float yRotation)
     {
-        get
-        {
-            return playerCamera.transform.rotation.eulerAngles.x;
-        }
-        set
-        {
-            var angles = playerCamera.transform.rotation.eulerAngles;
-            angles.x = value;
-            playerCamera.transform.rotation = Quaternion.Euler(angles);
-        }
+        transform.position = position;
+
+        var cameraRotation = playerCamera.transform.rotation.eulerAngles;
+        cameraRotation.x = xRotation;
+        playerCamera.transform.rotation = Quaternion.Euler(cameraRotation);
+
+        var playerRotation = transform.rotation.eulerAngles;
+        playerRotation.y = yRotation;
+        transform.rotation = Quaternion.Euler(playerRotation);
     }
 
     // Start is called before the first frame update
