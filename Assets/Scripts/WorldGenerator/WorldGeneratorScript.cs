@@ -31,6 +31,7 @@ public class WorldGeneratorScript : MonoBehaviour
     {
         foreach (var chunk in allChunks.Values)
         {
+            Destroy(chunk.GetComponent<MeshFilter>().sharedMesh);
             Destroy(chunk.gameObject);
         }
         allChunks.Clear();

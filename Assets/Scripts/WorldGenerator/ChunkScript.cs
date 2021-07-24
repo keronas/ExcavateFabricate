@@ -134,9 +134,9 @@ public class ChunkScript : MonoBehaviour
         mesh.triangles = meshData.Triangles;
         mesh.colors32 = meshData.Colors;
         var meshFilter = GetComponent<MeshFilter>();
-        Destroy(meshFilter.mesh);
-        meshFilter.mesh = mesh;
-        return meshFilter.mesh.GetInstanceID();
+        Destroy(meshFilter.sharedMesh);
+        meshFilter.sharedMesh = mesh;
+        return meshFilter.sharedMesh.GetInstanceID();
     }
 
     private async Task BakeMeshAsync(int meshId)
@@ -148,7 +148,7 @@ public class ChunkScript : MonoBehaviour
     {
         var meshFilter = GetComponent<MeshFilter>();
         var meshCollider = GetComponent<MeshCollider>();
-        meshCollider.sharedMesh = meshFilter.mesh;
+        meshCollider.sharedMesh = meshFilter.sharedMesh;
     }
 
     // Update is called once per frame
