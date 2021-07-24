@@ -14,8 +14,8 @@ public class WorldGeneratorScript : MonoBehaviour
     public bool IsDoneCreatingChunks { get; private set; } = false;
     public ChunkScript[] AllChunkScripts => allChunks.Values.Select(ob => ob.GetComponent<ChunkScript>()).ToArray();
 
-    private Dictionary<Vector3Int, GameObject> allChunks = new Dictionary<Vector3Int, GameObject>();
-    private Dictionary<Vector3Int, GameObject> activeChunks = new Dictionary<Vector3Int, GameObject>();
+    private Dictionary<Vector3Int, ChunkScript> allChunks = new Dictionary<Vector3Int, ChunkScript>();
+    private Dictionary<Vector3Int, ChunkScript> activeChunks = new Dictionary<Vector3Int, ChunkScript>();
     private Queue<Vector3Int> chunksToCreate = new Queue<Vector3Int>();
 
     private Perlin perlinGenerator = new Perlin();
@@ -31,7 +31,7 @@ public class WorldGeneratorScript : MonoBehaviour
     {
         foreach (var chunk in allChunks.Values)
         {
-            Destroy(chunk);
+            Destroy(chunk.gameObject);
         }
         allChunks.Clear();
         activeChunks.Clear();
@@ -63,14 +63,17 @@ public class WorldGeneratorScript : MonoBehaviour
         }
         else
         {
-            IsDoneCreatingChunks = true;
+            if (activeChunks.Values.All(chunk => chunk.DoneInitializing))
+            {
+                IsDoneCreatingChunks = true;
+            }
         }
     }
 
     private void RefreshChunks()
     {
         var centerPosition = Vector3Int.FloorToInt(ChunkViewCenter.position / ChunkSettings.ChunkSize);
-        var newActiveChunks = new Dictionary<Vector3Int, GameObject>();
+        var newActiveChunks = new Dictionary<Vector3Int, ChunkScript>();
 
         for (var z = -(int)ChunkViewDistance; z <= ChunkViewDistance; z++)
         {
@@ -84,7 +87,7 @@ public class WorldGeneratorScript : MonoBehaviour
                     {
                         var chunk = allChunks[position];
                         newActiveChunks.Add(position, chunk);
-                        chunk.SetActive(true);
+                        chunk.gameObject.SetActive(true);
                     }
                     else if (!chunksToCreate.Contains(position))
                     {
@@ -95,11 +98,11 @@ public class WorldGeneratorScript : MonoBehaviour
             }
         }
 
-        activeChunks.Except(newActiveChunks).ToList().ForEach(pair => pair.Value?.SetActive(false)); // deactivate chunks outside new viewrange
+        activeChunks.Except(newActiveChunks).ToList().ForEach(pair => pair.Value?.gameObject.SetActive(false)); // deactivate chunks outside new viewrange
         activeChunks = newActiveChunks;
     }
 
-    private GameObject CreateChunk(Vector3Int position, byte[][][] data = null)
+    private ChunkScript CreateChunk(Vector3Int position, byte[][][] data = null)
     {
         var chunk = new GameObject($"Chunk {position.x};{position.y};{position.z}");
         chunk.transform.position = (Vector3)position * ChunkSettings.ChunkSize;
@@ -111,7 +114,7 @@ public class WorldGeneratorScript : MonoBehaviour
             chunkScript.Data = data;
         chunkScript.ChunkSettings = ChunkSettings;
         chunkScript.PerlinGenerator = perlinGenerator;
-        allChunks.Add(position, chunk);
-        return chunk;
+        allChunks.Add(position, chunkScript);
+        return chunkScript;
     }
 }

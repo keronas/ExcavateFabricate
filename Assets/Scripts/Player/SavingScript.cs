@@ -19,7 +19,7 @@ public class SavingScript : MonoBehaviour
         }
         else if (Input.GetButtonDown("QuickLoad"))
         {
-            await LoadGame();
+            LoadGame();
         }
     }
 
@@ -47,14 +47,14 @@ public class SavingScript : MonoBehaviour
         file.Close();
     }
 
-    private async Task LoadGame()
+    private void LoadGame()
     {
         if (!File.Exists(FilePath))
             return;
 
         var file = File.OpenRead(FilePath);
         var data = new byte[file.Length];
-        await file.ReadAsync(data, 0, (int)file.Length); // cache data
+        file.Read(data, 0, (int)file.Length); // cache data
         var reader = new BinaryReader(new MemoryStream(data));
 
         var playerPosition = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
@@ -63,25 +63,22 @@ public class SavingScript : MonoBehaviour
         player.LoadTransform(playerPosition, xRotation, yRotation);
 
         var chunks = new List<(Vector3Int, byte[][][])>();
-        await Task.Run(() =>
+        while (reader.BaseStream.Position != reader.BaseStream.Length)
         {
-            while (reader.BaseStream.Position != reader.BaseStream.Length)
-            {
-                var position = new Vector3Int(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
-                var chunkSize = worldGenerator.ChunkSettings.ChunkSize;
+            var position = new Vector3Int(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
+            var chunkSize = worldGenerator.ChunkSettings.ChunkSize;
 
-                var chunkData = new byte[chunkSize][][];
-                for (var x = 0; x < chunkSize; x++)
+            var chunkData = new byte[chunkSize][][];
+            for (var x = 0; x < chunkSize; x++)
+            {
+                chunkData[x] = new byte[chunkSize][];
+                for (var y = 0; y < chunkSize; y++)
                 {
-                    chunkData[x] = new byte[chunkSize][];
-                    for (var y = 0; y < chunkSize; y++)
-                    {
-                        chunkData[x][y] = reader.ReadBytes((int)chunkSize);
-                    }
+                    chunkData[x][y] = reader.ReadBytes((int)chunkSize);
                 }
-                chunks.Add((position, chunkData));
             }
-        });
+            chunks.Add((position, chunkData));
+        }
         
         worldGenerator.LoadChunks(chunks);
     }

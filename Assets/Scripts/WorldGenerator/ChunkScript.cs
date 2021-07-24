@@ -18,6 +18,7 @@ public class ChunkScript : MonoBehaviour
     private MeshData blockMeshData;
     public byte[][][] Data { get; set; }
     public Vector3Int Position { get; private set; }
+    public bool DoneInitializing { get; private set; } = false;
 
     public void SetBlock(Vector3Int worldPosition, byte value)
     {
@@ -47,6 +48,7 @@ public class ChunkScript : MonoBehaviour
         var meshId = AssignMeshDataToFilter(meshData);
         await BakeMeshAsync(meshId);
         AssignMeshToCollider();
+        DoneInitializing = true;
     }
 
     private async Task InitializeDataAsync(Vector3 currentPosition)
