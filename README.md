@@ -9,6 +9,7 @@ WASD = Movement
 Space = Jump  
 Hold LMB = Destroy block  
 Hold RMB = Preview building block  
+1,2,3,4 = Change block to build  
 RMB + LMB = Build block  
 F5 = Save game  
 F9 = Load game  
