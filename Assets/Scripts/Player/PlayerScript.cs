@@ -41,6 +41,8 @@ public class PlayerScript : MonoBehaviour
         var playerRotation = transform.rotation.eulerAngles;
         playerRotation.y = yRotation;
         transform.rotation = Quaternion.Euler(playerRotation);
+
+        playerVelocity = Vector3.zero;
     }
 
     // Start is called before the first frame update
@@ -108,14 +110,16 @@ public class PlayerScript : MonoBehaviour
         {
             playerVelocity.y = JumpSpeed;
         }
-
-        Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-        move = transform.TransformVector(move);
-        controller.Move(move * Time.deltaTime * PlayerSpeed);
-
-        var gravityValue = WorldGenerator.IsDoneCreatingChunks ? -9.81f : 0;
-        playerVelocity.y += gravityValue * Time.deltaTime;
-        controller.Move(playerVelocity * Time.deltaTime);
+        
+        if (WorldGenerator.IsDoneCreatingChunks)
+        {
+            Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+            move = transform.TransformVector(move);
+            controller.Move(move * Time.deltaTime * PlayerSpeed);
+            var gravityValue = -9.81f;
+            playerVelocity.y += gravityValue * Time.deltaTime;
+            controller.Move(playerVelocity * Time.deltaTime);
+        }
 
         transform.Rotate(0, Input.GetAxis("Mouse X"), 0);
         playerCamera.transform.Rotate(-Input.GetAxis("Mouse Y"), 0, 0);
