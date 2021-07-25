@@ -8,14 +8,17 @@ using UnityEngine;
 public class SavingScript : MonoBehaviour
 {
     public string FilePath;
-    public WorldGeneratorScript worldGenerator;
-    public PlayerScript player;
+    public WorldGeneratorScript WorldGenerator;
+    public PlayerScript Player;
+    public GameObject SavingIndicator;
 
     async void Update()
     {
         if (Input.GetButtonDown("QuickSave"))
         {
+            SavingIndicator.SetActive(true);
             await SaveGame();
+            SavingIndicator.SetActive(false);
         }
         else if (Input.GetButtonDown("QuickLoad"))
         {
@@ -26,12 +29,12 @@ public class SavingScript : MonoBehaviour
     private async Task SaveGame()
     {
         var arrays = new List<byte[]>();
-        arrays.Add(Vector3ToByteArray(player.transform.position)); // 12 bytes position
-        arrays.Add(BitConverter.GetBytes(player.CameraRotationX)); // 4 bytes X rotation
-        arrays.Add(BitConverter.GetBytes(player.transform.rotation.eulerAngles.y)); // 4 bytes Y rotation
-        arrays.Add(BitConverter.GetBytes(worldGenerator.PerlinSeed)); // 4 bytes perlin seed
+        arrays.Add(Vector3ToByteArray(Player.transform.position)); // 12 bytes position
+        arrays.Add(BitConverter.GetBytes(Player.CameraRotationX)); // 4 bytes X rotation
+        arrays.Add(BitConverter.GetBytes(Player.transform.rotation.eulerAngles.y)); // 4 bytes Y rotation
+        arrays.Add(BitConverter.GetBytes(WorldGenerator.PerlinSeed)); // 4 bytes perlin seed
 
-        var chunks = worldGenerator.AllChunkScripts;
+        var chunks = WorldGenerator.AllChunkScripts;
         var data = await Task.Run(() =>
         {
             foreach (ChunkScript chunk in chunks)
@@ -61,14 +64,14 @@ public class SavingScript : MonoBehaviour
         var playerPosition = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         var xRotation = reader.ReadSingle();
         var yRotation = reader.ReadSingle();
-        player.LoadTransform(playerPosition, xRotation, yRotation);
-        worldGenerator.PerlinSeed = reader.ReadInt32();
+        Player.LoadTransform(playerPosition, xRotation, yRotation);
+        WorldGenerator.PerlinSeed = reader.ReadInt32();
 
         var chunks = new List<(Vector3Int, byte[][][])>();
         while (reader.BaseStream.Position != reader.BaseStream.Length)
         {
             var position = new Vector3Int(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32());
-            var chunkSize = worldGenerator.ChunkSettings.ChunkSize;
+            var chunkSize = WorldGenerator.ChunkSettings.ChunkSize;
 
             var chunkData = new byte[chunkSize][][];
             for (var x = 0; x < chunkSize; x++)
@@ -82,7 +85,7 @@ public class SavingScript : MonoBehaviour
             chunks.Add((position, chunkData));
         }
         
-        worldGenerator.LoadChunks(chunks);
+        WorldGenerator.LoadChunks(chunks);
     }
 
     // modified from https://answers.unity.com/questions/683693/converting-vector3-to-byte.html for lazyness reasons
