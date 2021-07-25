@@ -21,7 +21,7 @@ public class WorldGeneratorScript : MonoBehaviour
 
     private Dictionary<Vector3Int, ChunkScript> allChunks = new Dictionary<Vector3Int, ChunkScript>();
     private Dictionary<Vector3Int, ChunkScript> activeChunks = new Dictionary<Vector3Int, ChunkScript>();
-    private Queue<Vector3Int> chunksToCreate = new Queue<Vector3Int>();
+    private Queue<ChunkScript> chunksToActivate = new Queue<ChunkScript>();
 
     private Perlin perlinGenerator = new Perlin();
 
@@ -36,12 +36,11 @@ public class WorldGeneratorScript : MonoBehaviour
     {
         foreach (var chunk in allChunks.Values)
         {
-            Destroy(chunk.GetComponent<MeshFilter>().sharedMesh);
             Destroy(chunk.gameObject);
         }
         allChunks.Clear();
         activeChunks.Clear();
-        chunksToCreate.Clear();
+        chunksToActivate.Clear();
 
         foreach (var chunkData in chunks)
         {
@@ -62,10 +61,9 @@ public class WorldGeneratorScript : MonoBehaviour
     void Update()
     {
         RefreshChunks();
-        if (chunksToCreate.Any())
+        if (chunksToActivate.Any())
         {
-            var chunkPosition = chunksToCreate.Dequeue();
-            activeChunks[chunkPosition] = CreateChunk(chunkPosition);
+            chunksToActivate.Dequeue().gameObject.SetActive(true);
         }
         else
         {
@@ -93,12 +91,14 @@ public class WorldGeneratorScript : MonoBehaviour
                     {
                         var chunk = allChunks[position];
                         newActiveChunks.Add(position, chunk);
-                        chunk.gameObject.SetActive(true);
+                        if (!chunk.gameObject.activeInHierarchy && !chunksToActivate.Contains(chunk))
+                            chunksToActivate.Enqueue(chunk);
                     }
-                    else if (!chunksToCreate.Contains(position))
+                    else
                     {
-                        chunksToCreate.Enqueue(position);
-                        newActiveChunks.Add(position, null);
+                        var chunk = CreateChunk(position);
+                        newActiveChunks.Add(position, chunk);
+                        chunksToActivate.Enqueue(chunk);
                     }
                 }
             }
@@ -111,6 +111,7 @@ public class WorldGeneratorScript : MonoBehaviour
     private ChunkScript CreateChunk(Vector3Int position, byte[][][] data = null)
     {
         var chunk = new GameObject($"Chunk {position.x};{position.y};{position.z}");
+        chunk.SetActive(false);
         chunk.transform.position = (Vector3)position * ChunkSettings.ChunkSize;
         chunk.layer = 6;
         var meshRenderer = chunk.AddComponent<MeshRenderer>();
@@ -121,7 +122,6 @@ public class WorldGeneratorScript : MonoBehaviour
         chunkScript.ChunkSettings = ChunkSettings;
         chunkScript.PerlinGenerator = perlinGenerator;
         allChunks.Add(position, chunkScript);
-        chunk.SetActive(false);
         return chunkScript;
     }
 }

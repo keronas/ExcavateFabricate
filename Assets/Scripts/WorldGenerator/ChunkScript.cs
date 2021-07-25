@@ -35,14 +35,18 @@ public class ChunkScript : MonoBehaviour
         return TimeSpan.FromMilliseconds(ChunkSettings.BlockDestroyDurationsMillis[blockValue - 1]);
     }
 
-    // Start is called before the first frame update
-    async void Start()  
+    void OnDisable()
+    {
+        Destroy(GetComponent<MeshFilter>().sharedMesh);
+    }
+
+    async void OnEnable()
     {
         try
         {
             Position = Vector3Int.RoundToInt(transform.position) / (int)ChunkSettings.ChunkSize;
             blockMeshData = new MeshData(ChunkSettings.BlockMesh);
-            if (Data == null) // data not been set manually
+            if (Data == null)
             {
                 await InitializeDataAsync(transform.position);
             }
