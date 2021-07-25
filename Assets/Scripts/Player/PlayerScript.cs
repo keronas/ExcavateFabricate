@@ -140,7 +140,7 @@ public class PlayerScript : MonoBehaviour
     private void ShowPreviewBlock()
     {
         var position = FindBlockPositionAtCursor(true, out _);
-        if (position != null && position.Value.y != WorldGenerator.ChunkLayerCount * WorldGenerator.ChunkSettings.ChunkSize)
+        if (position != null && !IsAboveWorld(position.Value) && !IsInsidePlayer(position.Value))
         {
             if (previewBlock == null)
             {
@@ -152,6 +152,17 @@ public class PlayerScript : MonoBehaviour
         {
             RemovePreviewBlock();
         }
+    }
+
+    private bool IsAboveWorld(Vector3Int position)
+    {
+        return position.y >= WorldGenerator.ChunkLayerCount * WorldGenerator.ChunkSettings.ChunkSize;
+    }
+
+    private bool IsInsidePlayer(Vector3Int position)
+    {
+        var playerPosition = Vector3Int.RoundToInt(transform.position);
+        return position == playerPosition || position == playerPosition + Vector3Int.up;
     }
 
     private void RemovePreviewBlock()
