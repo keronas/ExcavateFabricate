@@ -822,6 +822,7 @@ MonoBehaviour:
   ChunkSettings: {fileID: 1176669789}
   ChunkViewCenter: {fileID: 1761726302}
   ChunkViewDistance: 10
+  ChunkLayerCount: 2
 --- !u!114 &1176669789
 MonoBehaviour:
   m_ObjectHideFlags: 0

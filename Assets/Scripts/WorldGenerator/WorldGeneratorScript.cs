@@ -11,6 +11,7 @@ public class WorldGeneratorScript : MonoBehaviour
     public ChunkSettingsScript ChunkSettings;
     public Transform ChunkViewCenter;
     public uint ChunkViewDistance;
+    public uint ChunkLayerCount;
     public bool IsDoneCreatingChunks { get; private set; } = false;
     public ChunkScript[] AllChunkScripts => allChunks.Values.Select(ob => ob.GetComponent<ChunkScript>()).ToArray();
     public int PerlinSeed
@@ -84,7 +85,7 @@ public class WorldGeneratorScript : MonoBehaviour
             var circleWidthAtZ = (int)Mathf.Sqrt(ChunkViewDistance * ChunkViewDistance - z * z); // pythagorean theorem to get width at given Z
             for (var x = -circleWidthAtZ; x <= circleWidthAtZ; x++)
             {
-                for (var y = 0; y < 2; y++)
+                for (var y = 0; y < ChunkLayerCount; y++)
                 {
                     var position = new Vector3Int(centerPosition.x + x, y, centerPosition.z + z);
                     if (allChunks.ContainsKey(position))

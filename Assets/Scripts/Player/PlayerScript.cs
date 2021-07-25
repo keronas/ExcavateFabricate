@@ -140,7 +140,7 @@ public class PlayerScript : MonoBehaviour
     private void ShowPreviewBlock()
     {
         var position = FindBlockPositionAtCursor(true, out _);
-        if (position != null)
+        if (position != null && position.Value.y != WorldGenerator.ChunkLayerCount * WorldGenerator.ChunkSettings.ChunkSize)
         {
             if (previewBlock == null)
             {
@@ -175,7 +175,7 @@ public class PlayerScript : MonoBehaviour
     {
         var position = FindBlockPositionAtCursor(false, out var colliderHit);
         
-        if (position != null)
+        if (position != null && position.Value.y != 0)
         {
             var chunk = colliderHit.gameObject.GetComponent<ChunkScript>();
             if (position == blockToDestroy)
