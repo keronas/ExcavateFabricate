@@ -38,17 +38,24 @@ public class ChunkScript : MonoBehaviour
     // Start is called before the first frame update
     async void Start()  
     {
-        Position = Vector3Int.RoundToInt(transform.position) / (int)ChunkSettings.ChunkSize;
-        blockMeshData = new MeshData(ChunkSettings.BlockMesh);
-        if (Data == null) // data not been set manually
+        try
         {
-            await InitializeDataAsync(transform.position);
+            Position = Vector3Int.RoundToInt(transform.position) / (int)ChunkSettings.ChunkSize;
+            blockMeshData = new MeshData(ChunkSettings.BlockMesh);
+            if (Data == null) // data not been set manually
+            {
+                await InitializeDataAsync(transform.position);
+            }
+            var meshData = await Task.Run(() => CreateMeshData(blockMeshData));
+            var meshId = AssignMeshDataToFilter(meshData);
+            await BakeMeshAsync(meshId);
+            AssignMeshToCollider();
+            DoneInitializing = true;
         }
-        var meshData = await Task.Run(() => CreateMeshData(blockMeshData));
-        var meshId = AssignMeshDataToFilter(meshData);
-        await BakeMeshAsync(meshId);
-        AssignMeshToCollider();
-        DoneInitializing = true;
+        catch (MissingReferenceException e) when (e.Message.Contains($"The object of type '{nameof(ChunkScript)}"))
+        {
+            // this object has already been destroyed, ignore exception
+        }
     }
 
     private async Task InitializeDataAsync(Vector3 currentPosition)
