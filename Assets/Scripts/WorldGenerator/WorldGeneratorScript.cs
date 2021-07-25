@@ -121,6 +121,7 @@ public class WorldGeneratorScript : MonoBehaviour
         chunkScript.ChunkSettings = ChunkSettings;
         chunkScript.PerlinGenerator = perlinGenerator;
         allChunks.Add(position, chunkScript);
+        chunk.SetActive(false);
         return chunkScript;
     }
 }
