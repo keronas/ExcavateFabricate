@@ -13,6 +13,11 @@ public class WorldGeneratorScript : MonoBehaviour
     public uint ChunkViewDistance;
     public bool IsDoneCreatingChunks { get; private set; } = false;
     public ChunkScript[] AllChunkScripts => allChunks.Values.Select(ob => ob.GetComponent<ChunkScript>()).ToArray();
+    public int PerlinSeed
+    {
+        get => perlinGenerator.Seed;
+        set => perlinGenerator.Seed = value;
+    }
 
     private Dictionary<Vector3Int, ChunkScript> allChunks = new Dictionary<Vector3Int, ChunkScript>();
     private Dictionary<Vector3Int, ChunkScript> activeChunks = new Dictionary<Vector3Int, ChunkScript>();

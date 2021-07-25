@@ -29,6 +29,7 @@ public class SavingScript : MonoBehaviour
         arrays.Add(Vector3ToByteArray(player.transform.position)); // 12 bytes position
         arrays.Add(BitConverter.GetBytes(player.CameraRotationX)); // 4 bytes X rotation
         arrays.Add(BitConverter.GetBytes(player.transform.rotation.eulerAngles.y)); // 4 bytes Y rotation
+        arrays.Add(BitConverter.GetBytes(worldGenerator.PerlinSeed)); // 4 bytes perlin seed
 
         var chunks = worldGenerator.AllChunkScripts;
         var data = await Task.Run(() =>
@@ -54,13 +55,14 @@ public class SavingScript : MonoBehaviour
 
         var file = File.OpenRead(FilePath);
         var data = new byte[file.Length];
-        file.Read(data, 0, (int)file.Length); // cache data
+        file.Read(data, 0, (int)file.Length); // cache whole file
         var reader = new BinaryReader(new MemoryStream(data));
 
         var playerPosition = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         var xRotation = reader.ReadSingle();
         var yRotation = reader.ReadSingle();
         player.LoadTransform(playerPosition, xRotation, yRotation);
+        worldGenerator.PerlinSeed = reader.ReadInt32();
 
         var chunks = new List<(Vector3Int, byte[][][])>();
         while (reader.BaseStream.Position != reader.BaseStream.Length)
